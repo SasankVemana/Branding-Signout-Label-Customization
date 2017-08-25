@@ -1,0 +1,109 @@
+import PTBR_BRANDING:Elements:BaseElement;
+import PTBR_BRANDING:SystemElements:SystemLink;
+import PTBR_BRANDING:SystemElements:SignOutLink;
+
+  /**
+  * SignOutLink Class
+  */
+class SignOutLink extends PTBR_BRANDING:SystemElements:SystemLink
+   /* --- Properties --- */   
+   
+   /* --- Methods --- */
+   method SignOutLink(&pId As string);
+   method clone() Returns PTBR_BRANDING:Elements:BaseElement;
+  
+protected
+   /* --- Protected properties --- */
+   
+   /* --- Protected Methods --- */
+   method setupLink(&pPreview As boolean);
+   
+end-class;
+
+  /**
+  * Constructor
+  *
+  * @param pId ID of the object.
+  *
+  */
+method SignOutLink
+   /+ &pId as String +/
+   
+   %Super = create PTBR_BRANDING:SystemElements:SystemLink(&pId);
+   
+   %This.setElementType("SignOutLink");
+   rem %this.setAdvancedOptionsPage (Page.);
+   
+   /* Initialize attributes */
+   %This.Label.setMessageText(95, 408, "Sign Out");
+end-method;
+
+  /**
+  * Make an exact copy of this object.
+  * NOTE: Only create the object here, do not copy any class properties.
+  *       If there are new class properties, override the copyProperties
+  *       method and do it there.  Should invoke the %Super.copyProperties
+  *       in that method though.
+  *
+  * @return BaseElement New object exactly matching this object.
+  *
+  */
+method clone
+   /+ Returns PTBR_BRANDING:Elements:BaseElement +/
+   /+ Extends/implements PTBR_BRANDING:SystemElements:SystemLink.clone +/
+   
+   Local PTBR_BRANDING:SystemElements:SignOutLink &newObj = create PTBR_BRANDING:SystemElements:SignOutLink(%This.ID);
+   
+   /* Call the copy properties function */
+   %This.copyProperties(&newObj);
+   
+   Return &newObj;
+   
+end-method;
+
+/*****************************
+*   Protected methods
+*****************************/
+
+  /**
+  * Setup the link properties
+  *
+  */
+method setupLink
+   /+ &pPreview as Boolean +/
+   
+   Local string &linkUrl = "";
+   
+   Local integer &pos1, &pos2, &pos3, &i;
+   Local string &siteName, &char, &parseSiteName;
+   
+   &linkUrl = %Request.LogoutURL;
+   
+   /* Remove session number (_nn) from the URL */
+   
+   &pos1 = (Find("/psp/", &linkUrl) + 5);
+   &pos2 = Find("/", &linkUrl, &pos1);
+   
+   &siteName = Substring(&linkUrl, &pos1, &pos2 - &pos1);
+   
+   &pos3 = 0;
+   For &i = 1 To Len(&siteName)
+      &char = Substring(&siteName, &i, 1);
+      If &char = "_" Then
+         &pos3 = &i;
+      End-If;
+   End-For;
+   
+   If (&pos3 <> 0) Then
+      &parseSiteName = Substring(&siteName, &pos3 + 1, Len(&siteName) - &pos3);
+      If IsNumber(&parseSiteName) Then
+         &siteName = Substring(&siteName, 1, &pos3 - 1);
+      End-If;
+   End-If;
+   
+   &linkUrl = Substring(&linkUrl, 0, &pos1 - 1) | &siteName | Substring(&linkUrl, &pos2, Len(&linkUrl) - (&pos2 - 1));
+   
+   %This.URL = &linkUrl;   
+   %This.Label.setText("Sign Out (" | %OperatorId | ")");
+   
+end-method;
